@@ -1,0 +1,76 @@
+# ============================================
+# CONFIGURACIÓN DE LA APLICACIÓN - EJEMPLO
+# ============================================
+# IMPORTANTE: 
+# 1. Copia este archivo a application.properties
+# 2. Reemplaza los valores con tus credenciales reales
+# 3. NUNCA subas application.properties a Git
+
+spring.application.name=backend
+
+# Puerto del servidor
+server.port=${PORT:8081}
+
+# Estrategia de matching para rutas
+spring.mvc.pathmatch.matching-strategy=path_pattern_parser
+
+# ============================================
+# CONFIGURACIÓN DE CORREO - SMTP
+# ============================================
+# Para Gmail: Usa una "Contraseña de aplicación" (App Password)
+# 
+# Cómo obtener contraseña de aplicación de Gmail:
+# 1. Ve a https://myaccount.google.com/security
+# 2. Activa "Verificación en 2 pasos"
+# 3. Busca "Contraseñas de aplicaciones"
+# 4. Genera una nueva para "ControlPlus Backend"
+# 5. Copia la contraseña de 16 caracteres
+# 6. Úsala aquí (NO tu contraseña normal de Gmail)
+
+spring.mail.host=${MAIL_HOST:smtp.gmail.com}
+spring.mail.port=${MAIL_PORT:587}
+spring.mail.username=${MAIL_USERNAME:tu_correo@gmail.com}
+spring.mail.password=${MAIL_PASSWORD:tu_contraseña_de_aplicacion}
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.properties.mail.smtp.ssl.trust=${MAIL_HOST:smtp.gmail.com}
+spring.mail.from=${MAIL_FROM:tu_correo@gmail.com}
+
+# ============================================
+# CONFIGURACIÓN DE BASE DE DATOS - MONGODB
+# ============================================
+# IMPORTANTE: NO CAMBIAR la URI de MongoDB
+# Ya está configurada y funcionando
+
+spring.data.mongodb.uri=${MONGODB_URI:mongodb+srv://usuario:password@cluster.mongodb.net/database?options}
+
+# ============================================
+# CONFIGURACIÓN DE MULTIPART (UPLOAD FILES)
+# ============================================
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=5MB
+spring.servlet.multipart.max-request-size=5MB
+
+# ============================================
+# NOTAS IMPORTANTES
+# ============================================
+# 
+# Para desarrollo local:
+# - Copia este archivo a application.properties
+# - Reemplaza los valores de MAIL_USERNAME, MAIL_PASSWORD, etc.
+# - Guarda y ejecuta: mvn spring-boot:run
+#
+# Para Railway/Heroku:
+# - Configura las variables de entorno en el dashboard
+# - Los valores ${VARIABLE:default} se reemplazan automáticamente
+#
+# Variables de entorno necesarias para producción:
+# - MONGODB_URI
+# - MAIL_HOST
+# - MAIL_PORT
+# - MAIL_USERNAME
+# - MAIL_PASSWORD
+# - MAIL_FROM
+# - PORT (Railway/Heroku lo configuran automáticamente)
+
