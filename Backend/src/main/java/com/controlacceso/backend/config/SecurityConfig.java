@@ -62,10 +62,11 @@ public class SecurityConfig {
         
         // Permitir orígenes específicos
         configuration.setAllowedOriginPatterns(Arrays.asList(
-                "http://localhost:3000",           // Frontend Next.js local
-                "http://localhost:8081",           // Backend local
-                "https://*.vercel.app",            // Todos los dominios de Vercel
-                "https://controlplus-*.vercel.app" // Dominios específicos del proyecto
+                "http://localhost:3000",                        // Frontend Next.js local
+                "http://localhost:8081",                        // Backend local
+                "https://*.vercel.app",                         // Todos los dominios de Vercel
+                "https://control-plus-beta.vercel.app",         // Dominio específico de Vercel
+                "https://controlplus-production.up.railway.app" // Backend en Railway
         ));
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
