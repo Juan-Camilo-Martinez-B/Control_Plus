@@ -18,5 +18,5 @@ cmds = ['mvn clean package -DskipTests']
 # Comando para iniciar la aplicación
 # $PORT es la variable que Railway asigna automáticamente
 # Como Root Directory = Backend, la ruta es relativa
-cmd = 'java -Dserver.port=$PORT -jar target/*.war'
+cmd = 'java -Dserver.port=$PORT -jar target/*.jar'
 
