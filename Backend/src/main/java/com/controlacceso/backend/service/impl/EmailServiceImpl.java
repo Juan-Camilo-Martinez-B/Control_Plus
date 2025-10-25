@@ -1,29 +1,32 @@
 package com.controlacceso.backend.service.impl;
 
+import java.io.IOException;
 import java.util.Base64;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import com.controlacceso.backend.exception.EmailSendingException;
 import com.controlacceso.backend.service.EmailService;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Attachments;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 public class EmailServiceImpl implements EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${sendgrid.api.key:}")
+    private String sendGridApiKey;
 
-    @Value("${spring.mail.from:noreply@controlplus.com}")
+    @Value("${spring.mail.from:martinez.b.juan.camilo@gmail.com}")
     private String fromEmail;
 
     @Override
@@ -34,14 +37,11 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public boolean enviarCorreoConQR(String destinatario, String asunto, String contenido, String qrBase64) {
         try {
-            log.info("Enviando correo a: {}", destinatario);
+            log.info("Enviando correo a: {} usando SendGrid", destinatario);
             
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
-            helper.setFrom(fromEmail);
-            helper.setTo(destinatario);
-            helper.setSubject(asunto);
+            // Crear objetos de email
+            Email from = new Email(fromEmail, "ControlPlus");
+            Email to = new Email(destinatario);
             
             // Crear contenido HTML
             StringBuilder htmlContent = new StringBuilder();
@@ -56,7 +56,9 @@ public class EmailServiceImpl implements EmailService {
             if (qrBase64 != null && !qrBase64.isEmpty()) {
                 htmlContent.append("<div style='text-align: center; margin-top: 20px;'>");
                 htmlContent.append("<p><strong>Tu Código QR de Acceso:</strong></p>");
-                htmlContent.append("<img src='cid:qrImage' alt='Código QR' style='max-width: 300px; border: 2px solid #2563eb; border-radius: 8px;'/>");
+                htmlContent.append("<img src='data:image/png;base64,")
+                          .append(qrBase64)
+                          .append("' alt='Código QR' style='max-width: 300px; border: 2px solid #2563eb; border-radius: 8px;'/>");
                 htmlContent.append("</div>");
             }
             
@@ -66,20 +68,37 @@ public class EmailServiceImpl implements EmailService {
             htmlContent.append("</div>");
             htmlContent.append("</div></body></html>");
             
-            helper.setText(htmlContent.toString(), true);
+            Content content = new Content("text/html", htmlContent.toString());
+            Mail mail = new Mail(from, asunto, to, content);
             
-            // Si hay QR, adjuntarlo como inline
+            // Si hay QR, también adjuntarlo como archivo
             if (qrBase64 != null && !qrBase64.isEmpty()) {
-                byte[] qrBytes = Base64.getDecoder().decode(qrBase64);
-                ByteArrayResource qrResource = new ByteArrayResource(qrBytes);
-                helper.addInline("qrImage", qrResource, "image/png");
+                Attachments attachments = new Attachments();
+                attachments.setContent(qrBase64);
+                attachments.setType("image/png");
+                attachments.setFilename("codigo_qr.png");
+                attachments.setDisposition("attachment");
+                mail.addAttachments(attachments);
             }
             
-            mailSender.send(message);
-            log.info("Correo enviado exitosamente a {}", destinatario);
-            return true;
+            // Enviar usando SendGrid
+            SendGrid sg = new SendGrid(sendGridApiKey);
+            Request request = new Request();
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
             
-        } catch (MessagingException e) {
+            Response response = sg.api(request);
+            
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                log.info("Correo enviado exitosamente a {} (Status: {})", destinatario, response.getStatusCode());
+                return true;
+            } else {
+                log.error("Error al enviar correo. Status: {}, Body: {}", response.getStatusCode(), response.getBody());
+                throw new EmailSendingException("Error al enviar correo electrónico. Status: " + response.getStatusCode());
+            }
+            
+        } catch (IOException e) {
             log.error("Error al enviar correo a {}: {}", destinatario, e.getMessage());
             throw new EmailSendingException("Error al enviar correo electrónico", e);
         }
