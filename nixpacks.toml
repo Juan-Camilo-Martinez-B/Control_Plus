@@ -1,0 +1,19 @@
+# ============================================
+# Configuración Nixpacks para Railway
+# ============================================
+# Este archivo le indica a Railway cómo construir
+# y ejecutar la aplicación Spring Boot
+
+[phases.setup]
+# Paquetes necesarios para compilar y ejecutar
+nixPkgs = ['maven', 'jdk17']
+
+[phases.build]
+# Comando para compilar el proyecto
+cmds = ['cd Backend && mvn clean package -DskipTests']
+
+[start]
+# Comando para iniciar la aplicación
+# $PORT es la variable que Railway asigna automáticamente
+cmd = 'java -Dserver.port=$PORT -jar Backend/target/*.jar'
+
