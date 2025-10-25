@@ -110,9 +110,9 @@ public class LoginQRController {
 
     private String obtenerMensajeAcceso(int permiso, String nombreUsuario) {
         return switch (permiso) {
-            case 3 -> String.format("✅ Bienvenido %s - Acceso completo (todas las puertas)", nombreUsuario);
-            case 2 -> String.format("✅ Bienvenido %s - Acceso a puerta 1 y 2", nombreUsuario);
-            case 1 -> String.format("✅ Bienvenido %s - Acceso solo a puerta 1", nombreUsuario);
+            case 3 -> String.format("✅ Bienvenid@ %s - Acceso completo (todas las puertas)", nombreUsuario);
+            case 2 -> String.format("✅ Bienvenid@ %s - Acceso a puerta 1 y 2", nombreUsuario);
+            case 1 -> String.format("✅ Bienvenid@ %s - Acceso solo a puerta 1", nombreUsuario);
             default -> String.format("❌ Permiso denegado para %s - Nivel de acceso inválido", nombreUsuario);
         };
     }
