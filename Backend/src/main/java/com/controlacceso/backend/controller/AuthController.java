@@ -155,7 +155,16 @@ public class AuthController {
     
     private void enviarQRPorCorreo(Usuario usuario) {
         try {
+            log.info("Intentando enviar QR a: {}", usuario.getCorreo());
+            log.info("QR Token del usuario: {}", usuario.getQrToken());
+            
+            if (usuario.getQrToken() == null || usuario.getQrToken().isEmpty()) {
+                log.error("El usuario no tiene QR Token asignado");
+                throw new IllegalStateException("El usuario no tiene QR Token asignado");
+            }
+            
             String qrBase64 = qrService.generarQrBase64(usuario.getQrToken());
+            log.info("QR generado correctamente, tamaño Base64: {}", qrBase64.length());
             
             String contenido = String.format(
                     "Hola %s,\n\n" +
@@ -167,14 +176,20 @@ public class AuthController {
                     usuario.getPermiso()
             );
             
-            emailService.enviarCorreoConQR(
+            boolean enviado = emailService.enviarCorreoConQR(
                     usuario.getCorreo(),
                     "Código QR de Acceso - ControlPlus",
                     contenido,
                     qrBase64
             );
+            
+            if (enviado) {
+                log.info("Correo con QR enviado exitosamente a: {}", usuario.getCorreo());
+            } else {
+                log.error("El correo con QR no pudo ser enviado");
+            }
         } catch (Exception e) {
-            log.error("Error al enviar QR por correo: {}", e.getMessage());
+            log.error("Error al enviar QR por correo a {}: {}", usuario.getCorreo(), e.getMessage(), e);
             throw new EmailSendingException("Error enviando QR por correo", e);
         }
     }

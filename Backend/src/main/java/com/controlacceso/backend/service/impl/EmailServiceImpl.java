@@ -37,7 +37,13 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public boolean enviarCorreoConQR(String destinatario, String asunto, String contenido, String qrBase64) {
         try {
-            log.info("Enviando correo a: {} usando SendGrid", destinatario);
+            log.info("=== INICIANDO ENVÍO DE CORREO CON QR ===");
+            log.info("Destinatario: {}", destinatario);
+            log.info("Asunto: {}", asunto);
+            log.info("QR Base64 presente: {}", (qrBase64 != null && !qrBase64.isEmpty()));
+            if (qrBase64 != null && !qrBase64.isEmpty()) {
+                log.info("Tamaño QR Base64: {} caracteres", qrBase64.length());
+            }
             
             // Crear objetos de email
             Email from = new Email(fromEmail, "ControlPlus");
@@ -54,6 +60,7 @@ public class EmailServiceImpl implements EmailService {
             
             // Si hay QR, agregarlo como imagen embebida
             if (qrBase64 != null && !qrBase64.isEmpty()) {
+                log.info("Agregando QR como imagen embebida en HTML");
                 htmlContent.append("<div style='text-align: center; margin-top: 20px;'>");
                 htmlContent.append("<p><strong>Tu Código QR de Acceso:</strong></p>");
                 htmlContent.append("<img src='data:image/png;base64,")
@@ -73,15 +80,18 @@ public class EmailServiceImpl implements EmailService {
             
             // Si hay QR, también adjuntarlo como archivo
             if (qrBase64 != null && !qrBase64.isEmpty()) {
+                log.info("Agregando QR como archivo adjunto");
                 Attachments attachments = new Attachments();
                 attachments.setContent(qrBase64);
                 attachments.setType("image/png");
                 attachments.setFilename("codigo_qr.png");
                 attachments.setDisposition("attachment");
                 mail.addAttachments(attachments);
+                log.info("Archivo adjunto agregado correctamente");
             }
             
             // Enviar usando SendGrid
+            log.info("Enviando correo a través de SendGrid...");
             SendGrid sg = new SendGrid(sendGridApiKey);
             Request request = new Request();
             request.setMethod(Method.POST);
@@ -90,17 +100,22 @@ public class EmailServiceImpl implements EmailService {
             
             Response response = sg.api(request);
             
+            log.info("Respuesta de SendGrid - Status: {}", response.getStatusCode());
+            
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                log.info("Correo enviado exitosamente a {} (Status: {})", destinatario, response.getStatusCode());
+                log.info("✓ Correo enviado exitosamente a {}", destinatario);
                 return true;
             } else {
-                log.error("Error al enviar correo. Status: {}, Body: {}", response.getStatusCode(), response.getBody());
+                log.error("✗ Error al enviar correo. Status: {}, Body: {}", response.getStatusCode(), response.getBody());
                 throw new EmailSendingException("Error al enviar correo electrónico. Status: " + response.getStatusCode());
             }
             
         } catch (IOException e) {
-            log.error("Error al enviar correo a {}: {}", destinatario, e.getMessage());
+            log.error("✗ IOException al enviar correo a {}: {}", destinatario, e.getMessage(), e);
             throw new EmailSendingException("Error al enviar correo electrónico", e);
+        } catch (Exception e) {
+            log.error("✗ Error inesperado al enviar correo a {}: {}", destinatario, e.getMessage(), e);
+            throw new EmailSendingException("Error inesperado al enviar correo", e);
         }
     }
 }
