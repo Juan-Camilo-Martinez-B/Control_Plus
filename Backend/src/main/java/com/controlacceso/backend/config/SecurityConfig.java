@@ -60,10 +60,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Permitir orígenes específicos (cambiar en producción)
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",  // Frontend Next.js local
-                "http://localhost:8081"   // Backend local
+        // Permitir orígenes específicos
+        configuration.setAllowedOriginPatterns(Arrays.asList(
+                "http://localhost:3000",           // Frontend Next.js local
+                "http://localhost:8081",           // Backend local
+                "https://*.vercel.app",            // Todos los dominios de Vercel
+                "https://controlplus-*.vercel.app" // Dominios específicos del proyecto
         ));
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
