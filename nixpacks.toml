@@ -6,7 +6,7 @@
 # IMPORTANTE: Root Directory debe estar configurado como "Backend" en Railway
 
 [phases.setup]
-# Paquetes necesarios para compilar y ejecutar
+# Paquetes necesarios para compilar y ejecutar (Java 17 LTS)
 nixPkgs = ['maven', 'jdk17']
 
 [phases.build]
