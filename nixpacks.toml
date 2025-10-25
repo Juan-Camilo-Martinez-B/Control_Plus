@@ -3,6 +3,7 @@
 # ============================================
 # Este archivo le indica a Railway cómo construir
 # y ejecutar la aplicación Spring Boot
+# IMPORTANTE: Root Directory debe estar configurado como "Backend" en Railway
 
 [phases.setup]
 # Paquetes necesarios para compilar y ejecutar
@@ -10,10 +11,12 @@ nixPkgs = ['maven', 'jdk17']
 
 [phases.build]
 # Comando para compilar el proyecto
-cmds = ['cd Backend && mvn clean package -DskipTests']
+# Como Root Directory = Backend, no necesitamos "cd Backend"
+cmds = ['mvn clean package -DskipTests']
 
 [start]
 # Comando para iniciar la aplicación
 # $PORT es la variable que Railway asigna automáticamente
-cmd = 'java -Dserver.port=$PORT -jar Backend/target/*.jar'
+# Como Root Directory = Backend, la ruta es relativa
+cmd = 'java -Dserver.port=$PORT -jar target/*.jar'
 
