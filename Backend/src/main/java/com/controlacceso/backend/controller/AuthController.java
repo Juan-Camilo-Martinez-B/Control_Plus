@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,9 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
+    
+    @Value("${app.base.url}")
+    private String appBaseUrl;
 
     private final Map<String, Usuario> usuariosPendientes = new HashMap<>();
     private final Map<String, String> codigosValidacion = new HashMap<>();
@@ -122,7 +126,8 @@ public class AuthController {
     private void enviarCorreoValidacion(Usuario usuario, String codigoValidacion) {
         try {
             String enlaceVerificacion = String.format(
-                    "http://localhost:8081/api/auth/verify-email?correo=%s&codigo=%s",
+                    "%s/api/auth/verify-email?correo=%s&codigo=%s",
+                    appBaseUrl,
                     usuario.getCorreo(),
                     codigoValidacion
             );
